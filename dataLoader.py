@@ -10,6 +10,6 @@ def data_loader():
     df["timestamp"]= pd.to_datetime(df["timestamp"])
 
     #displaye the first rows
-    print(df.head())
+    #print(df.head())
 
     return df

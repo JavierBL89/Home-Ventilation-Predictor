@@ -1,0 +1,13 @@
+#intefacePanel{
+    display: flex;
+    flex-direction: column;
+}
+
+#intefacePanel p{
+    display: inline-block;
+} 
+#intefacePanel button{
+    width: fit-content;
+    display: inline-block;
+    margin-left: 20px;
+}

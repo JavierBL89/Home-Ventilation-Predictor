@@ -1,6 +1,7 @@
 
 This model tries tp predict the optimañ hour in a day to ventilate the house in order to safe energy consumtion (heater or AC) as well as to ventilate the house on hotter hours of the day in winter time and the coldest hours in summer time.
 
+VERY BASIC PREDICTION OLNY USING OUTDOOR INDOOR TEMPERATURES WITHOY TAKING INTO ACCOUNT HUMIDYS AND THAT..
 ## The Goal
 
 We want to predict the optimal hour in a day to ventilate the house, based on:
