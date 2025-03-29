@@ -64,18 +64,18 @@ def first_arima_model():
 
 
 
+
+
 def optimized_arima_model():
 
     ##### IMPROVING ARIMA (optimize p,d,q)
     from pmdarima import auto_arima
-
     from statsmodels.tsa.statespace.sarimax import SARIMAX
 
     # disable interactive plotting and use a non-GUI backend:
     import matplotlib
     matplotlib.use("Agg")  # Use a non-interactive backend (Agg)
     import matplotlib.pyplot as plt
-
 
 
     df=arima_data_loader()

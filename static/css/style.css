@@ -1,13 +1,92 @@
-#intefacePanel{
-    display: flex;
-    flex-direction: column;
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5f8fa;
+    color: #222;
 }
 
-#intefacePanel p{
-    display: inline-block;
-} 
-#intefacePanel button{
-    width: fit-content;
-    display: inline-block;
-    margin-left: 20px;
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+h1,h3 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.selectors {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.selectors label {
+    font-weight: bold;
+}
+
+.selectors select,
+#predictButton {
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#predictButton {
+    background: #0078d7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#predictButton:hover {
+    background: #005fa3;
+}
+
+.results {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.results img {
+    width: 80px;
+    height: 80px;
+}
+
+.hidden {
+    display: none;
+}
+
+.info-section p {
+    padding: 10px 20px ;
+    background: #fff;
+    border-radius: 10px;
+    line-height: 1.6;
+}
+
+.info-section h2 {
+    margin-top: 30px;
+}
+
+@media (max-width: 600px) {
+    .selectors {
+        gap: 10px;
+    }
+
+    .results img {
+        width: 60px;
+        height: 60px;
+    }
 }

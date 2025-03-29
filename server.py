@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template,send_from_directory
 import pandas as pd
 import numpy as np
 from models.arima import optimized_arima_model
@@ -6,7 +6,13 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()  # Load .env file
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, static_folder="static", template_folder='templates')
+
+# Serve static files like images
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory(app.static_folder, filename)
+
 
 
 @app.route('/', methods=['GET'])
@@ -149,13 +155,23 @@ def predict():
     print("Final suggested hours:", suggested_hours)  # Debugging
 
 
+    ## More uselful weather data
+    weather_condition = weather_data[0]["weather"][0]["main"].lower()  # e.g., "clouds"
+    avg_temp = round(df["outdoor_temperature"].mean(), 1)
+    max_temp = round(df["outdoor_temperature"].max(), 1)
+    min_temp = round(df["outdoor_temperature"].min(), 1)
+
+
     return jsonify({
         "bestVentilationTime": f"{best_hour}:00",
         "alternativeTimes": [h for h in suggested_hours if h != f"{best_hour}:00"],
         "morningSuggestion": best_morning_hour,
         "eveningSuggestion": best_evening_hour,
-        "season": "winter" if winter_mode else "summer"
-
+        "season": "winter" if winter_mode else "summer",
+        "weatherCondition": weather_condition,
+        "avgTemperature": avg_temp,
+        "maxTemperature": max_temp,
+        "minTemperature": min_temp
    }), 200
 
 

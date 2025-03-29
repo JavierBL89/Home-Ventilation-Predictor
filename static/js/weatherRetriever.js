@@ -2,7 +2,10 @@
 let openWeatherAPIString = "";
 
 document.addEventListener("DOMContentLoaded", () => {
-    const dateOptions = document.querySelectorAll("#intefacePanel button");
+
+    const daySelector = document.getElementById("daySelector");
+    const submitBtn = document.getElementById("predictButton");
+    const modelSelector = document.getElementById("modelSelector");
 
     // Create separate instances for each future date
     const today = new Date();
@@ -29,13 +32,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fourthDay").innerHTML = fourthDayString;
     document.getElementById("fifthDay").innerHTML = fifthDayString;
 
-    console.log(secondDayString);
 
 
-    dateOptions.forEach((dateOption) => {
-        dateOption.addEventListener("click", () => {
-            getWeatherData(dateOption.name)
-        })
+    // listen to Submit Event
+    submitBtn.addEventListener("click", async () => {
+        const selectedDate = daySelector.value;
+        const model = modelSelector.value;
+        console.log(selectedDate, model);
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "⏳ Predicting...";
+
+        await getWeatherData(selectedDate, model);
+
+        // After processing is complete
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "🔍 Predict Ventilation Time";
     });
 });
 
@@ -116,7 +127,7 @@ function filterForecastByDate(foreCastList, selectedDate) {
  * loaded, it logs an error message and returns early. It then constructs a URL with the provided
  * parameters, makes a fetch request to the API, and processes the response data.
  */
-async function getWeatherData(selectedDate) {
+async function getWeatherData(selectedDate, model) {
 
     await loadAPIKey()
     if (!openWeatherAPIString) {
@@ -140,7 +151,7 @@ async function getWeatherData(selectedDate) {
             console.log("Filtered Forecast for", targetDate, ":", filteredForecast.length);
 
             // send data to python backend
-            await sendToBackEnd(filteredForecast, targetDate)
+            await sendToBackEnd(filteredForecast, targetDate, model)
 
         } else {
             throw new Error(data.message);
@@ -160,7 +171,7 @@ async function getWeatherData(selectedDate) {
  * format and will be included in the body of the POST request to the backend server. The backend
  * server will
  */
-async function sendToBackEnd(filteredForecast, targetDate) {
+async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
     try {
@@ -169,7 +180,8 @@ async function sendToBackEnd(filteredForecast, targetDate) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 weatherData: filteredForecast,
-                targetDate: targetDate
+                targetDate: targetDate,
+                model: model
             })
         });
 
@@ -180,10 +192,85 @@ async function sendToBackEnd(filteredForecast, targetDate) {
         const alternatives = Array.isArray(result.alternativeTimes)
             ? result.alternativeTimes.join(', ')
             : "No alternatives available";
-        // ✅ Display results
-        alert(`Best ventilation time: ${result.bestVentilationTime}\nMorning suggestion ${result.morningSuggestion}\nEvening suggestion ${result.eveningSuggestion}\nSeason: ${result.season}\nAlternatives: ${alternatives}`);
+
+        sendVisualResults(result, alternatives, targetDate)
+
     }
     catch (error) {
         console.error("Error sending data to backend:", error);
     }
+
+
+    /**
+     * The function `sendVisualResults` displays weather-related data in the DOM and updates the
+     * weather icon based on the weather condition provided.
+     * @param result - The `sendVisualResults` function is designed to display weather-related results
+     * in the DOM based on the `result` object passed to it. The `result` object contains the following
+     * properties:
+     */
+    async function sendVisualResults(result, alternatives) {
+        // Display in DOM
+        document.getElementById("result-container").style.display = "block";
+        document.getElementById("avgTemp").textContent = result.avgTemperature;
+        document.getElementById("minTemp").textContent = result.minTemperature;
+        document.getElementById("maxTemp").textContent = result.maxTemperature;
+        document.getElementById("bestVentilationTime").textContent = result.bestVentilationTime;
+        document.getElementById("morningSuggestion").textContent = result.morningSuggestion;
+        document.getElementById("eveningSuggestion").textContent = result.eveningSuggestion;
+        document.getElementById("alternativeTimes").textContent = alternatives;
+        document.getElementById("season").textContent = result.season;
+
+        updateWeatherIcon(result.weatherCondition)
+    }
+
+
+
+
+   /**
+    * The function `updateWeatherIcon` takes a weather condition as input and updates the weather icon
+    * and description on a webpage based on the condition.
+    * @param weatherCondition - The `weatherCondition` parameter should be a string representing the
+    * current weather condition. It can be one of the following values: "clear", "clouds", "rain",
+    * "drizzle", "thunderstorm", or "snow".
+    */
+    function updateWeatherIcon(weatherCondition) {
+        const iconMap = {
+        clear: {
+            icon: "clear.png",
+            description: "Clear sky"
+        },
+        clouds: {
+            icon: "clouds.png",
+            description: "Cloudy"
+        },
+        rain: {
+            icon: "rain.png",
+            description: "Rainy"
+        },
+        drizzle: {
+            icon: "drizzle.png",
+            description: "Light rain"
+        },
+        thunderstorm: {
+            icon: "thunderstorm.png",
+            description: "Stormy"
+        },
+        snow: {
+            icon: "snow.png",
+            description: "Snowy"
+        }
+          }
+    
+
+    const lowerCondition = weatherCondition.toLowerCase();
+    const info = iconMap[lowerCondition];
+
+    // Fallback if condition is not mapped
+    const iconFile = info ? info.icon : "Ups!";
+    const description = info ? info.description : "Unknown Weather Category";
+
+    document.getElementById("weatherCondition").textContent = description;
+    document.getElementById("weather-icon").src = `/static/images/${iconFile}`;
+    }
+
 }
