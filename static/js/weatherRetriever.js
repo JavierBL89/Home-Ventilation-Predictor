@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fifthDay").innerHTML = fifthDayString;
 
 
-
     // listen to Submit Event
     submitBtn.addEventListener("click", async () => {
         const selectedDate = daySelector.value;
