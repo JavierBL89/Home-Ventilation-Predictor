@@ -4,6 +4,8 @@ import numpy as np
 from models.arima import optimized_arima_model
 from dotenv import load_dotenv
 import os
+from datetime import datetime
+
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
@@ -69,8 +71,10 @@ def predict():
     print("Outdoor Temperature:\n", df["outdoor_temperature"].head(22))
 
     # Determine Winter or summer modo based on today's average temperature
-    avg_temp = df["outdoor_temperature"].mean()
-    winter_mode = avg_temp < 15  # If the average outdoor temp is below 15°C, assume winter
+    #avg_temp = df["outdoor_temperature"].mean()
+    #winter_mode = avg_temp < 15  # If the average outdoor temp is below 15°C, assume winter
+
+    season = get_season_from_date(selected_date)
 
 
     # Suggest 2 ventilation periods:
@@ -88,31 +92,38 @@ def predict():
 
     # Ensure there's at least one valid value before finding idxmax()
     if not temp_diff.empty:
-        if winter_mode:
-            # In winter, look for the **smallest difference** (to avoid bringing in very cold air)
+        if season == "winter":
+            # Avoid freezing ventilation – pick time with smallest difference (least heat loss)
             best_hour = temp_diff.idxmin().hour
-            print(f"BEST HOUR {best_hour}" )
         else:
-            # In summer, go for max cooling
+            # Max cooling effect – largest difference
             best_hour = temp_diff.idxmax().hour
     else:
-        best_hour = -1  # Use -1 as a fallback instead of a string
+        best_hour = -1  # Only use fallback if no data  
 
-
-    if winter_mode:
-        # WINTER - choose the warmest hour of the day
-        morning_hours = df.between_time("06:00", "12:00")
-        evening_hours = df.between_time("13:00", "18:00")
+    if season == "winter":
+        # Suggest warmest hours
+        morning_hours = df.between_time("08:00", "12:00")
+        evening_hours = df.between_time("13:00", "17:00")
 
         best_morning_hour = morning_hours["outdoor_temperature"].idxmax().hour if not morning_hours.empty else None
         best_evening_hour = evening_hours["outdoor_temperature"].idxmax().hour if not evening_hours.empty else None
-    else:
-        # summer - the best hour for cooling effect (indoor - outdoor max difference)**
-        morning_hours = temp_diff.between_time("06:00", "12:00")
-        evening_hours = temp_diff.between_time("18:00", "23:00")
+
+    elif season == "summer":
+        # Suggest coolest (max cooling effect)
+        morning_hours = temp_diff.between_time("06:00", "11:00")
+        evening_hours = temp_diff.between_time("19:00", "22:00")
 
         best_morning_hour = morning_hours.idxmin().hour if not morning_hours.empty else None
         best_evening_hour = evening_hours.idxmin().hour if not evening_hours.empty else None
+
+    else:
+        # Spring or Autumn – pick most balanced
+        morning_hours = temp_diff.between_time("07:00", "12:00")
+        evening_hours = temp_diff.between_time("16:00", "20:00")
+
+        best_morning_hour = (morning_hours - morning_hours.median()).abs().idxmin().hour if not morning_hours.empty else None
+        best_evening_hour = (evening_hours - evening_hours.median()).abs().idxmin().hour if not evening_hours.empty else None
 
     # Ensure valid output
     best_morning_hour = f"{best_morning_hour}:00" if best_morning_hour is not None else "No optimal morning ventilation"
@@ -120,20 +131,32 @@ def predict():
 
     print("Available hours for alternative:", temp_diff.index.hour.tolist())
 
-    # 🔥 **Ensure we always suggest 2 alternative options**
-    suggested_hours = []
+
+    suggested_hours = [] # 🔥 **Ensure we always suggest 2 alternative options**
+    alt_sorted = temp_diff.copy() # Ensure alt_sorted is always defined
 
     # Ensure `best_hour` is only added once
     if best_hour is not None and isinstance(best_hour, (int, float)):
         suggested_hours.insert(0, f"{best_hour}:00")
 
-   # Get all alternatives sorted by score (not just time)
+    # Remove best_hour from alternatives
     if best_hour != -1:
         alt_sorted = temp_diff.drop(index=forecast.index[forecast.index.hour == best_hour])
     else:
         alt_sorted = temp_diff
 
-    alt_sorted = alt_sorted.sort_values(ascending=winter_mode)  # Min for winter, max for summer
+    # 🧠 Apply season-aware filtering to alt_sorted
+    if season == "winter":
+        alt_sorted = alt_sorted.between_time("04:00", "23:00")
+    elif season == "summer":
+        alt_sorted = alt_sorted.between_time("06:00", "22:00")
+    else:  # spring or autumn
+        alt_sorted = alt_sorted.between_time("07:00", "21:00")
+
+    # Then sort depending on whether you want to cool or warm the house
+    alt_sorted = alt_sorted.sort_values(ascending=(season == "winter"))  # ascending = True for winter
+
+    # Select alternative hour
     alt_hours = alt_sorted.index[0].hour if not alt_sorted.empty else None
 
     print("Filtered alternative hours:", alt_hours)  # Debugging
@@ -149,8 +172,12 @@ def predict():
         else:
             suggested_hours.append("No optimal alternative found")
 
-    # Ensure only 2 unique suggested times
-    suggested_hours = sorted(list(set(suggested_hours)))[:2]  # Remove duplicates & keep first two and order ascendently
+    top_score = alt_sorted.iloc[0]
+    threshold = 1.0 if season in ["spring", "autumn"] else 0.5
+    suggested_hours = alt_sorted[abs(alt_sorted - top_score) <= threshold].index.hour.tolist()
+    ## suggest alterntive hours
+    suggested_hours = [f"{h}:00" for h in sorted(set(suggested_hours))]
+
 
     print("Final suggested hours:", suggested_hours)  # Debugging
 
@@ -167,13 +194,48 @@ def predict():
         "alternativeTimes": [h for h in suggested_hours if h != f"{best_hour}:00"],
         "morningSuggestion": best_morning_hour,
         "eveningSuggestion": best_evening_hour,
-        "season": "winter" if winter_mode else "summer",
+        "season": season,
         "weatherCondition": weather_condition,
         "avgTemperature": avg_temp,
         "maxTemperature": max_temp,
         "minTemperature": min_temp
    }), 200
 
+
+def get_best_hour_by_season(temp_diff, df, season):
+    if season == "winter":
+        # Pick hour with smallest difference (warmest)
+        valid_hours = temp_diff.between_time("11:00", "17:00")
+        return valid_hours.idxmin().hour if not valid_hours.empty else None
+
+    elif season == "summer":
+        # Pick hour with largest cooling effect
+        return temp_diff.idxmax().hour if not temp_diff.empty else None
+
+    elif season in ["spring", "autumn"]:
+        # Avoid night ventilation, pick reasonable hours
+        valid_hours = temp_diff.between_time("06:00", "21:00")
+        return valid_hours.idxmax().hour if not valid_hours.empty else None
+
+    # fallback
+    return temp_diff.idxmax().hour if not temp_diff.empty else None
+
+
+# Funtion figures ot the Season category from the target date
+def get_season_from_date(date_str):
+    # Convert string to datetime object
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    month = date.month
+    day = date.day
+
+    if (month == 12 and day >= 21) or (1 <= month <= 2) or (month == 3 and day < 20):
+        return "Winter"
+    elif (month == 3 and day >= 20) or (4 <= month <= 5) or (month == 6 and day < 21):
+        return "Spring"
+    elif (month == 6 and day >= 21) or (7 <= month <= 8) or (month == 9 and day < 22):
+        return "Summer"
+    else:
+        return "Autumn"
 
 if __name__ == '__main__':
     app.run(debug=True)
