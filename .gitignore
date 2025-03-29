@@ -1,4 +1,10 @@
+# .gitignore
 venv/
-.env/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+.DS_Store
+.env
