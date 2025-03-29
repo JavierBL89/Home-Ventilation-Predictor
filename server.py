@@ -43,11 +43,8 @@ def predict():
 
     # convert weather data into a Dataframe
     df = pd.DataFrame(weather_data)
-    # ✅ Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
-    df.rename(columns={"dt_txt": "timestamp"}, inplace=True)
-    # ✅ Extract temperature (rename it to outdoor_temperature)
-    df["outdoor_temperature"] = df["main"].apply(lambda x: x["temp"])
-
+    df.rename(columns={"dt_txt": "timestamp"}, inplace=True) # ✅ Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
+    df["outdoor_temperature"] = df["main"].apply(lambda x: x["temp"]) # ✅ Extract temperature (rename it to outdoor_temperature)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df.set_index("timestamp", inplace=True)
 
@@ -64,7 +61,6 @@ def predict():
 
     # Ensure outdoor temperature has values for all forecast timestamps
     df = df.reindex(forecast.index, method="nearest")  # Use nearest matching values to fill missing timestamps
-
 
     print("Forecast:\n", forecast.head(22))
     print("Forecast Index:\n", forecast.index)
