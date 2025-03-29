@@ -40,17 +40,18 @@ def predict():
     selected_date = data["targetDate"]
     print("Received Weather Data:", weather_data)  # Debugging
 
-
     # convert weather data into a Dataframe
     df = pd.DataFrame(weather_data)
     df.rename(columns={"dt_txt": "timestamp"}, inplace=True) # ✅ Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
     df["outdoor_temperature"] = df["main"].apply(lambda x: x["temp"]) # ✅ Extract temperature (rename it to outdoor_temperature)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df.set_index("timestamp", inplace=True)
-
-   # Predict next 48 hours indoor temperature
-    arima_model = optimized_arima_model()
-    forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
+    
+    # Determine the Model to be used
+    if data["model"] == "sarimax":
+        # Predict next 48 hours indoor temperature
+        arima_model = optimized_arima_model()
+        forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
 
    # Ensure outdoor temperature column has no missing values
     df["outdoor_temperature"] = df["outdoor_temperature"].interpolate(method="linear")
