@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify, render_template,send_from_directory
 import pandas as pd
 import numpy as np
 from models.arima import optimized_arima_model
+from models.prophet import prophet_model,simulate_indoor_temperature
+
 from dotenv import load_dotenv
 import os
 from datetime import datetime
@@ -42,8 +44,8 @@ def predict():
 
     # convert weather data into a Dataframe
     df = pd.DataFrame(weather_data)
-    df.rename(columns={"dt_txt": "timestamp"}, inplace=True) # ✅ Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
-    df["outdoor_temperature"] = df["main"].apply(lambda x: x["temp"]) # ✅ Extract temperature (rename it to outdoor_temperature)
+    df.rename(columns={"dt_txt": "timestamp"}, inplace=True) # Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
+    df["outdoor_temperature"] = df["main"].apply(lambda x: x["temp"]) # Extract temperature (rename it to outdoor_temperature)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df.set_index("timestamp", inplace=True)
     
@@ -52,6 +54,9 @@ def predict():
         # Predict next 48 hours indoor temperature
         arima_model = optimized_arima_model()
         forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
+    else:
+       df["indoor_temperature"] = simulate_indoor_temperature(df)  # or however you calculate this
+       forecast = prophet_model(df)
 
    # Ensure outdoor temperature column has no missing values
     df["outdoor_temperature"] = df["outdoor_temperature"].interpolate(method="linear")
@@ -128,8 +133,7 @@ def predict():
 
     print("Available hours for alternative:", temp_diff.index.hour.tolist())
 
-
-    suggested_hours = [] # 🔥 **Ensure we always suggest 2 alternative options**
+    suggested_hours = [] # Ensure we always suggest 2 alternative options**
     alt_sorted = temp_diff.copy() # Ensure alt_sorted is always defined
 
     # Ensure `best_hour` is only added once
