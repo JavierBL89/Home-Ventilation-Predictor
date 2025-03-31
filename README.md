@@ -106,5 +106,5 @@ ARIMA can still outperform Prophet on well-behaved, short-range data that’s be
 
 ## SARIMAX View
 
-![SARIMAX View](images/SARIMAX.png)
-![Prophet View](images/Prophet.png)
+![SARIMAX View](static/images/SARIMAX.png)
+![Prophet View](static/images/Prophet.png)
