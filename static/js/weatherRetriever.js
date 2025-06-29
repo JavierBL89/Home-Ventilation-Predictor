@@ -174,6 +174,8 @@ async function getWeatherData(selectedDate, model) {
 async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
+
+    let url = if()
     try {
         const response = await fetch("http://127.0.0.1:5000/process_weather", { // Adjust URL if using FastAPI
             method: "POST",
