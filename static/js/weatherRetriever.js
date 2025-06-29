@@ -174,17 +174,19 @@ async function getWeatherData(selectedDate, model) {
 async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
+    
+    const DEV=true
 
     let url = ""
     // Example: Check if a specific variable exists
-    if (!process.env.DEV) {
-        url ="http://127.0.0.1:5000/"
+    if (DEV) {
+        url ="http://127.0.0.1:5000"
     } else {
-        url =
+        url =""
     }
     
     try {
-        const response = await fetch("process_weather", { // Adjust URL if using FastAPI
+        const response = await fetch(`${url}/process_weather`, { // Adjust URL if using FastAPI
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
