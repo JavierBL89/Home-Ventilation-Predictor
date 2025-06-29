@@ -22,7 +22,6 @@ We want to determine the most optimal hour in the day to ventilate the house, ba
 - 🌅 **Daily temperature patterns** (e.g., mornings or evenings being cooler)
 - ❄️☀️ **Seasonal behavior** (e.g., different ventilation strategies in winter vs. summer)
 
-
 ---
 
 ## 🔍 Why Use a Time-Series Model?

@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(selectedDate, model);
         submitBtn.disabled = true;
         submitBtn.innerHTML = "⏳ Predicting...";
-
+        
         await getWeatherData(selectedDate, model);
 
         // After processing is complete
@@ -128,6 +128,7 @@ function filterForecastByDate(foreCastList, selectedDate) {
  */
 async function getWeatherData(selectedDate, model) {
 
+  
     await loadAPIKey()
     if (!openWeatherAPIString) {
         console.error("API key not loaded yet.");
