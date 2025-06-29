@@ -51,12 +51,11 @@ Install dependencies
 
    - pip install prophet
 
-   - pip install pandas matplotlib statsmodels seaborn scikit-learn tensorflow pmdarima
+   - pip install pandas matplotlib statsmodels seaborn pmdarima
 
 PYTORCH
 
    - pip install torch
-   - pip install tensorflow
 
 - install PyTorch
    - pip install torch torchvision torchaudio

@@ -21,7 +21,7 @@ We want to determine the most optimal hour in the day to ventilate the house, ba
 - 📉 **Indoor vs. outdoor temperature** differences
 - 🌅 **Daily temperature patterns** (e.g., mornings or evenings being cooler)
 - ❄️☀️ **Seasonal behavior** (e.g., different ventilation strategies in winter vs. summer)
-
+z
 ---
 
 ## 🔍 Why Use a Time-Series Model?
@@ -95,7 +95,6 @@ ARIMA can still outperform Prophet on well-behaved, short-range data that’s be
 - `pandas` – Data manipulation
 - `numpy` – Numerical calculations
 - `matplotlib` / `seaborn` – Visualization
-- `scikit-learn` – Evaluation metrics
 - `statsmodels` – SARIMAX model
 - `prophet` – Facebook’s time-series forecaster
 - `tensorflow` – Used for potential LSTM model integration
