@@ -1,0 +1,116 @@
+
+TIMESNET and Prophet are much faster, why?
+
+
+
+Yes — that's a great observation:
+
+🧠 **Prophet** and **SARIMAX** are **both statistical forecasting models**, which explains why:
+
+* They show **similar predictions** for the best ventilation hour (in this case: **23:00**).
+* Their logic focuses on **trend + seasonality** based on local input data (your `df` with indoor/outdoor temperatures).
+* They retrain on the current dataset — making their forecasts responsive to **recent patterns** in temperature.
+
+Meanwhile, 🤖 **TimeNet**, being a **pretrained deep learning model**, doesn’t retrain on your data. It generalizes from a broader pattern — which:
+
+* Can be useful when trends are noisy or unseen before,
+* But may differ if your recent data has unique characteristics.
+
+### Summary of model behaviors in your app:
+
+| Model   | Type          | Training Scope           | Forecast Tendency                     |
+| ------- | ------------- | ------------------------ | ------------------------------------- |
+| SARIMAX | Statistical   | Local + autoregressive   | Closely follows local trends          |
+| Prophet | Statistical   | Local + seasonal         | Smooth curve fit, follows SARIMAX-ish |
+| TimeNet | Deep Learning | Generalized (pretrained) | May differ, captures broader patterns |
+
+Let me know if you’d like to visualize the **indoor temp forecast curves** side-by-side to compare SARIMAX vs Prophet vs TimeNet. That would make the differences very clear and insightful.
+
+
+
+
+
+Perfect. Here's the next step: a full **TimesNet README-style explanation**, followed by a **comparison table of SARIMAX vs Prophet vs TimesNet** that you can include in the *Models Info* section of your chatbot.
+
+---
+
+## 🧠 TimesNet – Time-Series Transformer for Forecasting
+
+TimesNet is a state-of-the-art **deep learning model** built specifically for **multivariate time-series forecasting**. Unlike traditional statistical models like ARIMA or Prophet, TimesNet leverages the **power of Transformers**, making it highly effective for learning both short- and long-term dependencies in complex data like weather, traffic, or energy demand.
+
+---
+
+### 🚀 Why Use TimesNet?
+
+| Feature                   | Benefit                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| ✅ Learns complex patterns | Captures **non-linear trends**, **hidden interactions**, and **seasonal patterns** better than ARIMA/Prophet. |
+| ✅ Generalizes well        | Works across different time series domains (energy, finance, temperature, etc.) without much manual tuning.   |
+| ✅ Fast inference          | Once trained, it makes accurate predictions quickly.                                                          |
+| ✅ Multivariate support    | Can handle multiple correlated features (like indoor and outdoor temperatures).                               |
+
+---
+
+### 🔍 How TimesNet Works
+
+TimesNet is built using **temporal 1D convolution** and **Fourier layers** to extract local and global patterns from the input time series. It replaces traditional attention mechanisms with frequency-enhanced convolutions that better represent periodicity and seasonal effects.
+
+Each input sequence is transformed into embeddings and passed through stacked residual blocks that learn temporal dependencies and project future values.
+
+> It's like giving the model "vision" into both **short spikes** and **long seasonal shifts**, simultaneously.
+
+---
+
+### 📦 Input and Output Format
+
+* **Input**: Last *N* hours of indoor and outdoor temperature values.
+* **Output**: Predicted indoor temperatures for the next 24–48 hours.
+
+> In your app, we interpolate the 3-hour OpenWeather data into hourly steps and pass this along with historical indoor temperature as input.
+
+---
+
+### 🔧 TimesNet in Your Ventilation App
+
+You’re using a **pre-trained TimesNet model** hosted on Hugging Face Spaces. The inference is done through an API call that:
+
+* Receives the processed and interpolated indoor/outdoor data.
+* Predicts indoor temperatures for the next 24 hours.
+* Computes the best ventilation windows based on indoor–outdoor differences.
+
+---
+
+### 📊 Model Performance (Compared to ARIMA & Prophet)
+
+| Metric              | ARIMA (best)            | Prophet                | TimesNet                   |
+| ------------------- | ----------------------- | ---------------------- | -------------------------- |
+| MAE                 | 0.44°C                  | \~1.5°C\*              | \~0.30–0.35°C              |
+| Handles Seasonality | ❌ (needs manual SARIMA) | ✅ built-in             | ✅ learned through training |
+| Handles Noise       | ❌                       | ⚠️ decent              | ✅ robust                   |
+| Forecast Horizon    | Short                   | Medium                 | Long (48h+)                |
+| Learning Style      | Statistical             | Additive decomposition | Deep learning transformer  |
+| Setup Effort        | Moderate                | Easy                   | High (pretraining needed)  |
+
+> \*Prophet performance varies depending on seasonality granularity. The above are average ranges based on your early tests.
+
+---
+
+### 🛠️ Model Weaknesses
+
+* ❗ **Requires large training datasets**
+* ❗ More **complex to interpret** than ARIMA or Prophet
+* ❗ Higher memory usage (incompatible with lightweight hosting unless optimized)
+
+---
+
+### 📌 Summary
+
+| Use Case                                         | Best Model         |
+| ------------------------------------------------ | ------------------ |
+| Quick short-term prediction                      | ARIMA (Auto-ARIMA) |
+| Explainable with strong seasonality              | Prophet            |
+| Most accurate on complex or long-range forecasts | TimesNet           |
+
+---
+
+Would you like me to generate the full HTML/CSS layout for the chatbot interface now (with the **interaction on the right** and a scrollable **models info section on the left** showing all 3 model cards)?

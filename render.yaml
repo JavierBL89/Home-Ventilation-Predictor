@@ -1,7 +1,11 @@
 services:
   - type: web
-    name: home-ventilation-predictor-ai-app
-    env: python
+    name: vent-predictor
+    runtime: python
+    region: frankfurt
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: python server.py
+    envVars:
+      - key: OPENWEATHER_API_KEY
+        sync: false
     plan: free

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventilation Predictor</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="info_container">
+
+        <section class="info-section">
+            <h2>🔍 Ventilation Time Prediction: Model Overview</h2>
+  <p>Our app predicts the most optimal time to ventilate your home using three different forecasting models. Each model uses indoor and outdoor temperature data to analyze trends and generate future predictions. Below is how each model works and how we’ve applied them.</p>
+
+  <hr>
+
+  <h3>📘 1. SARIMAX (Seasonal ARIMA with Exogenous Variables)</h3>
+  <ul>
+    <li><strong>Type:</strong> Traditional Statistical Model</li>
+    <li><strong>Best for:</strong> Capturing short-term dependencies, trends, and lag effects</li>
+    <li><strong>Key Feature:</strong> Requires data to be stationary</li>
+  </ul>
+
+  <h4>🔧 Workflow:</h4>
+  <ol>
+    <li><strong>Stationarity Check:</strong> We run the Augmented Dickey-Fuller (ADF) test to determine if the indoor temperature data is stationary. If not, we apply differencing to remove trends.</li>
+    <li><strong>Model Training:</strong> We train SARIMAX with the transformed temperature data using the (p,d,q) order determined either manually or via <code>auto_arima()</code>. We include daily seasonality with parameters like (1,1,1,24) for 24-hour cycles.</li>
+    <li><strong>Forecasting:</strong> We generate hourly indoor temperature predictions. Outdoor temperatures are interpolated to match indoor forecast resolution. We compare the two to determine the best, morning, and evening times to ventilate the home.</li>
+  </ol>
+
+  <hr>
+
+  <h3>📗 2. Prophet by Meta</h3>
+  <ul>
+    <li><strong>Type:</strong> Additive Forecasting Model</li>
+    <li><strong>Best for:</strong> Seasonal trends, holiday effects, sudden changes</li>
+    <li><strong>Key Feature:</strong> Automatically handles non-stationarity and multiple seasonalities</li>
+  </ul>
+
+  <h4>🔧 Workflow:</h4>
+  <ol>
+    <li><strong>Data Preparation:</strong> Prophet requires two columns: <code>ds</code> (timestamp) and <code>y</code> (value to predict, i.e., indoor temperature).</li>
+    <li><strong>Model Training:</strong> We use the entire historical temperature series and let Prophet learn daily/weekly seasonalities automatically.
+      <br>
+      Prophet uses additive components:<br>
+      <code>y(t) = Trend(t) + Seasonality(t) + Holidays(t) + Error(t)</code>
+    </li>
+    <li><strong>Forecasting:</strong> We forecast 48 future hourly values. Just like SARIMAX, we compare indoor forecast to interpolated outdoor temperature to recommend the best ventilation windows.</li>
+  </ol>
+
+  <hr>
+
+  <h3>📕 3. TimesNet (Time-Series Transformer)</h3>
+  <ul>
+    <li><strong>Type:</strong> Deep Learning Transformer</li>
+    <li><strong>Best for:</strong> Complex, multi-step dependencies and long-term temporal patterns</li>
+    <li><strong>Key Feature:</strong> Learns temporal dynamics with attention mechanisms</li>
+  </ul>
+
+  <h4>🔧 Workflow:</h4>
+  <ol>
+    <li><strong>Pretrained Model:</strong> We use a pretrained version of TimesNet hosted on Hugging Face. Our pipeline feeds it hourly indoor temperature sequences.</li>
+    <li><strong>Model Input:</strong> The past 24–48 hours of indoor temperatures are formatted into the model’s input format. Outdoor temperatures are interpolated as context (optional extension).</li>
+    <li><strong>Inference & Prediction:</strong> TimesNet outputs the next 48 indoor hourly predictions. We align these with the interpolated outdoor data to determine:
+      <ul>
+        <li>🕐 Best Time</li>
+        <li>🌅 Morning Option</li>
+        <li>🌇 Evening Option</li>
+        <li>🌀 Alternatives</li>
+      </ul>
+    </li>
+  </ol>
+
+  <hr>
+
+  <h3>🔄 Logic Behind All Models</h3>
+  <p>All models follow the same ventilation decision logic:</p>
+  <ol>
+    <li>Forecast indoor temperature (SARIMAX / Prophet / TimesNet).</li>
+    <li>Interpolate outdoor forecast from OpenWeather API.</li>
+    <li>Detect the hour with maximum difference:
+      <ul>
+        <li><strong>In summer:</strong> ventilate during the coolest indoor vs. outdoor gap (e.g., late night).</li>
+        <li><strong>In winter:</strong> ventilate during the warmest difference (e.g., midday).</li>
+      </ul>
+    </li>
+  </ol>
+  <p>This logic is <strong>season-aware</strong>, allowing the app to give different suggestions per season.</p>
+
+  <hr>
+
+  <h3>❓ Why Are the Results Sometimes Different?</h3>
+  <p>Each model makes different assumptions about the data:</p>
+  <ul>
+    <li><strong>SARIMAX:</strong> assumes past patterns will continue, and can't easily adjust to sudden changes.</li>
+    <li><strong>Prophet:</strong> balances seasonality with trend shifts, but may be less accurate hour-to-hour.</li>
+    <li><strong>TimesNet:</strong> is more flexible and powerful but can overfit or behave unpredictably unless trained on extensive data.</li>
+  </ul>
+        </section>
+        </div>
+
+        
+        <div class="interactive_container">
+            <h1>🌬️ Best Time to Ventilate</h1>
+
+
+            <h3>Location: Madrid</h3>
+    
+            <div class="card">
+    
+                <div class="selectors">
+                    <label for="modelSelector">Model:</label>
+                    <select id="modelSelector">
+                        <option value="sarimax">SARIMAX</option>
+                        <option value="prophet">Prophet (Meta)</option>
+                        <option value="timesNet">TimesNet (Transformer-based)</option>
+    
+                    </select>
+    
+                    <label for="daySelector">Day:</label>
+                    <select id="daySelector">
+                        <option value="secondDay" id="secondDay"></option>
+                        <option value="thirdDay" id="thirdDay"></option>
+                        <option value="fourthDay" id="fourthDay"></option>
+                        <option value="fifthDay" id="fifthDay"></option>
+                    </select>
+    
+                    <button id="predictButton">🔍 Predict Ventilation Time</button>
+                </div>
+    
+                <div id="result-container" class="results hidden">
+                    <div>
+                        <h4>Weather Info</h4>
+                    </div>
+                    <img id="weather-icon" src="" alt="Weather Icon" />
+                    <p><strong>Weather:</strong> <span id="weatherCondition"></span></p>
+                    <p><strong>Avg Temp:</strong> <span id="avgTemp"></span>°C</p>
+                    <p><strong>Min / Max:</strong> <span id="minTemp"></span>°C / <span id="maxTemp"></span>°C</p>
+                    <p><strong>Season:</strong> <span id="season"></span></p>
+    
+                    <div>
+                        <h4>Prediction of Most Optimal Home Ventilation Time</h4>
+                        <p><strong>Best time:</strong> <span id="bestVentilationTime"></span></p>
+                        <p><strong>Alternatives:</strong> <span id="alternativeTimes"></span></p>
+                        <p><strong>Morning:</strong> <span id="morningSuggestion"></span></p>
+                        <p><strong>Evening:</strong> <span id="eveningSuggestion"></span></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <script src="{{ url_for('static', filename='js/weatherRetriever.js') }}"></script>
+    </div>
+</body>
+
+</html>
