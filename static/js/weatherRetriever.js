@@ -53,7 +53,16 @@ document.addEventListener("DOMContentLoaded", () => {
 // Fetch API key from Flask server
 async function loadAPIKey() {
     try {
-        const response = await fetch("http://127.0.0.1:5000/config");
+
+        let url = ""
+        // Example: Check if a specific variable exists
+        if (DEV) {
+            url ="http://127.0.0.1:5000"
+        } else {
+            url ="https://home-ventilation-predictor.onrender.com"
+        }
+    
+        const response = await fetch(`${url}/config`);
         const data = await response.json();
 
         console.log("API Key Loaded:", data.openWeatherAPI);
@@ -182,7 +191,7 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
     if (DEV) {
         url ="http://127.0.0.1:5000"
     } else {
-        url =""
+        url ="https://home-ventilation-predictor.onrender.com"
     }
     
     try {
