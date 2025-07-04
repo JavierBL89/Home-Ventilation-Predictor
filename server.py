@@ -13,6 +13,7 @@ import requests
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
+CORS(app, origins="*")
 
 # Serve static files like images
 @app.route('/static/<path:filename>')
