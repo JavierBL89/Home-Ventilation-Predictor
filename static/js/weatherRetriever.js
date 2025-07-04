@@ -53,7 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // Fetch API key from Flask server
 async function loadAPIKey() {
     try {
-
+        
+        const DEV = false;
         let url = ""
         // Example: Check if a specific variable exists
         if (DEV) {
