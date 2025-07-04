@@ -1,5 +1,6 @@
 
 let openWeatherAPIString = "";
+const DEV = false;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -54,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadAPIKey() {
     try {
         
-        const DEV = false;
         let url = ""
         // Example: Check if a specific variable exists
         if (DEV) {
