@@ -8,6 +8,7 @@ from utils.predict_best_hours import predict_best_hours
 from dotenv import load_dotenv
 import os
 import requests
+from flask_cors import CORS
 
 
 
