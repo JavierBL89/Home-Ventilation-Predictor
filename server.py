@@ -10,7 +10,7 @@ import os
 import requests
 from flask_cors import CORS
 
-
+DEV = False
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
@@ -108,6 +108,12 @@ def predict():
     
     return best_hours_prediction
 
+port=0
+if DEV==True:
+    port==3000
+else:
+    port==5000
+
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", port)), debug=True)
