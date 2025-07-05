@@ -14,7 +14,7 @@ from flask_cors import CORS
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
-CORS(app, origins="*")
+CORS(app, origins=["https://home-ventilation-predictor.onrender.com"])
 
 # Serve static files like images
 @app.route('/static/<path:filename>')
@@ -111,4 +111,3 @@ def predict():
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
-
