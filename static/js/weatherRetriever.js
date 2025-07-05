@@ -185,7 +185,6 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
     
-    const DEV=true
 
     let url = ""
     // Example: Check if a specific variable exists
