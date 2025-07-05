@@ -1,6 +1,7 @@
 
 let openWeatherAPIString = "";
-const DEV = false;
+let url = ""
+const DEV = true;
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -55,10 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadAPIKey() {
     try {
         
-        let url = ""
         // Example: Check if a specific variable exists
         if (DEV) {
-            url ="http://127.0.0.1:5000"
+            url ="http://127.0.0.1:3000"
         } else {
             url ="https://home-ventilation-predictor.onrender.com"
         }
@@ -66,7 +66,6 @@ async function loadAPIKey() {
         const response = await fetch(`${url}/config`);
         const data = await response.json();
 
-        console.log("API Key Loaded:", data.openWeatherAPI);
         openWeatherAPIString = data.openWeatherAPI
     } catch (error) {
         console.error("Error fetching API key:", error);
@@ -185,11 +184,9 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
     
-
-    let url = ""
     // Example: Check if a specific variable exists
     if (DEV) {
-        url ="http://127.0.0.1:5000"
+        url ="http://127.0.0.1:3000"
     } else {
         url ="https://home-ventilation-predictor.onrender.com"
     }
