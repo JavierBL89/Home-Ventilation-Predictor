@@ -25,9 +25,8 @@ pandas==2.3.0
 patsy==1.0.1
 pillow==11.2.1
 pmdarima==2.0.4
-prophet==1.1.7
+prophet==1.1.4
 pyparsing==3.2.3
-pystan==2.19.1.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 pytz==2025.2
