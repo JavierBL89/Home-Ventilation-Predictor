@@ -1,6 +1,5 @@
 
 let openWeatherAPIString = "";
-let url = ""
 const DEV = true;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -56,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadAPIKey() {
     try {
         
+        let url = ""
         // Example: Check if a specific variable exists
         if (DEV) {
             url ="http://127.0.0.1:3000"
@@ -184,6 +184,8 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
 
     console.log("Sending to backend:", { filteredForecast, targetDate });
     
+
+    let url = ""
     // Example: Check if a specific variable exists
     if (DEV) {
         url ="http://127.0.0.1:3000"
