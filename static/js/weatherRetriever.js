@@ -182,8 +182,9 @@ async function getWeatherData(selectedDate, model) {
  */
 async function sendToBackEnd(filteredForecast, targetDate, model) {
 
-    console.log("Sending to backend:", { filteredForecast, targetDate });
-    
+    console.log("Sending to backend:", { filteredForecast, targetDate,});
+    console.log("✅ Selected model:", model);  // Should show 'sarimax' or 'timesNet'
+
 
     let url = ""
     // Example: Check if a specific variable exists

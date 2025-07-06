@@ -55,14 +55,12 @@ def predict():
     df.set_index("timestamp", inplace=True)
     
     # Determine the Model to be used
-    if model == "sarimax":
-        print("⚙️ SARIMAX selected")
+    if data["model"] == "sarimax":
         # Predict next 48 hours indoor temperature
         arima_model = optimized_arima_model()
         forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
 
-    elif model == "timesNet":
-        print("⚙️ TimeNet selected")
+    elif data["model"] == "timesNet":
         # 1.Interpolate data for a full 48h data entries 
         hourly_temps, hourly_timestamps = interpolate_weather_data_for_times_net(weather_data)
         payload = {
@@ -84,8 +82,7 @@ def predict():
             print("❌ Failed to get TimeNet Forecast:", response.text)
             return jsonify({"error": "Failed to get TimeNet forecast"}), 500
 
-    elif model == "prophet":
-       print("⚙️ Prophet selected")
+    elif data["model"] == "prophet":
        df["indoor_temperature"] = simulate_indoor_temperature(df)  # or however you calculate this
        forecast = prophet_model(df)
 
