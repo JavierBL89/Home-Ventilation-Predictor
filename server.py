@@ -81,14 +81,14 @@ def predict():
             print("❌ Failed to get TimeNet Forecast:", response.text)
             return jsonify({"error": "Failed to get TimeNet forecast"}), 500
 
-    elif:
+    elif data["model"] == "prophet":
        df["indoor_temperature"] = simulate_indoor_temperature(df)  # or however you calculate this
        forecast = prophet_model(df)
 
     else:
         return jsonify({"error": f"Unknown model '{model}'"}), 400
     # Ensure outdoor temperature column has no missing values
-    
+
     df["outdoor_temperature"] = df["outdoor_temperature"].interpolate(method="linear")
 
    # Ensure forecast starts at 00:00 of the selected day
