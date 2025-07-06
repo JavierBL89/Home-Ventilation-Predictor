@@ -42,10 +42,11 @@ def predict():
     if not data or "weatherData" not in data or "targetDate" not in data:
         return jsonify({"error": "Invalid request"}), 400
 
+    model = data.get("model", "").lower()
+    print(f"🔧 Requested model: {model}")
     weather_data = data["weatherData"]
     selected_date = data["targetDate"]
     print("Received Weather Data:", weather_data)  # Debugging
-
     # convert weather data into a Dataframe
     df = pd.DataFrame(weather_data)
     df.rename(columns={"dt_txt": "timestamp"}, inplace=True) # Rename 'dt_txt' to 'timestamp' (since OpenWeather sends 'dt_txt')
@@ -54,12 +55,14 @@ def predict():
     df.set_index("timestamp", inplace=True)
     
     # Determine the Model to be used
-    if data["model"] == "sarimax":
+    if model == "sarimax":
+        print("⚙️ SARIMAX selected")
         # Predict next 48 hours indoor temperature
         arima_model = optimized_arima_model()
         forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
 
-    elif data["model"] == "timesNet":
+    elif model == "timesNet":
+        print("⚙️ TimeNet selected")
         # 1.Interpolate data for a full 48h data entries 
         hourly_temps, hourly_timestamps = interpolate_weather_data_for_times_net(weather_data)
         payload = {
@@ -81,7 +84,8 @@ def predict():
             print("❌ Failed to get TimeNet Forecast:", response.text)
             return jsonify({"error": "Failed to get TimeNet forecast"}), 500
 
-    elif data["model"] == "prophet":
+    elif model == "prophet":
+       print("⚙️ Prophet selected")
        df["indoor_temperature"] = simulate_indoor_temperature(df)  # or however you calculate this
        forecast = prophet_model(df)
 
