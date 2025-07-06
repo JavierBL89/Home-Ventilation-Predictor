@@ -59,7 +59,7 @@ def predict():
         arima_model = optimized_arima_model()
         forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
 
-    if data["model"] == "timesNet":
+    elif data["model"] == "timesNet":
         # 1.Interpolate data for a full 48h data entries 
         hourly_temps, hourly_timestamps = interpolate_weather_data_for_times_net(weather_data)
         payload = {
@@ -81,11 +81,14 @@ def predict():
             print("❌ Failed to get TimeNet Forecast:", response.text)
             return jsonify({"error": "Failed to get TimeNet forecast"}), 500
 
-    else:
+    elif:
        df["indoor_temperature"] = simulate_indoor_temperature(df)  # or however you calculate this
        forecast = prophet_model(df)
 
-   # Ensure outdoor temperature column has no missing values
+    else:
+        return jsonify({"error": f"Unknown model '{model}'"}), 400
+    # Ensure outdoor temperature column has no missing values
+    
     df["outdoor_temperature"] = df["outdoor_temperature"].interpolate(method="linear")
 
    # Ensure forecast starts at 00:00 of the selected day
