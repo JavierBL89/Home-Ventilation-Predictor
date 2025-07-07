@@ -67,7 +67,7 @@ def first_arima_model():
 
 
 
-def train_optimized_arima_model():
+def optimized_arima_model():
 
     ##### IMPROVING ARIMA (optimize p,d,q)
     from pmdarima import auto_arima
@@ -125,7 +125,3 @@ def train_optimized_arima_model():
         pickle.dump(model_fit_optimized, f)
 
     return model_fit_optimized
-
-
-if __name__ == "__main__":
-    train_optimized_arima_model()
