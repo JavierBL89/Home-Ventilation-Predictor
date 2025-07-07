@@ -1,7 +1,10 @@
 #from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
-
+import os,sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dataLoader import data_loader
+import pickle
+
 
 
 def arima_data_loader():
@@ -64,9 +67,7 @@ def first_arima_model():
 
 
 
-
-
-def optimized_arima_model():
+def train_optimized_arima_model():
 
     ##### IMPROVING ARIMA (optimize p,d,q)
     from pmdarima import auto_arima
@@ -119,7 +120,12 @@ def optimized_arima_model():
     print("EVALUATE ACCURACY (2nd Attempt)")
     print("Mean Absolute Error (MAE):", mae)
     print("Mean Squared Error (MSE):", mse)
+    
+    with open("arima_model.pkl", "wb") as f:
+        pickle.dump(model_fit_optimized, f)
 
     return model_fit_optimized
 
 
+if __name__ == "__main__":
+    train_optimized_arima_model()

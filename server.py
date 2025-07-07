@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import os
 import requests
 from flask_cors import CORS
+import pickle
 
 DEV = False
 
@@ -56,8 +57,11 @@ def predict():
     
     # Determine the Model to be used
     if data["model"] == "sarimax":
+
         # Predict next 48 hours indoor temperature
-        arima_model = optimized_arima_model()
+        with open("arima_model.pkl", "rb") as f:
+            arima_model = pickle.load(f)
+
         forecast = arima_model.predict(start=len(df), end=len(df) + 46, dynamic=False)
 
     elif data["model"] == "timesNet":
