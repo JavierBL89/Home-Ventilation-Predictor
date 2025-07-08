@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fourthDay").innerHTML = fourthDayString;
     document.getElementById("fifthDay").innerHTML = fifthDayString;
 
+    // show training data graph
+    const showBtn = document.getElementById("showTrainingGraph");
+    const closeBtn = document.getElementById("CloseTraining");
+    const modal = document.getElementById("trainingModal");
 
     // listen to Submit Event
     submitBtn.addEventListener("click", async () => {
@@ -50,14 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // show training data graph
-    document.getElementById("showTrainingGraph").addEventListener("click", () => {
-        document.getElementById("trainingModal").style.display = "flex";
-    });
+    if (showBtn && closeBtn && modal) {
+        showBtn.addEventListener("click", () => {
+          modal.style.display = "flex";
+        });
     
-    document.getElementById("closeTraining").addEventListener("click", () => {
-        document.getElementById("trainingModal").style.display = "none";
-    });
-    document.getElementById("trainingChartPopup").src = `data:image/png;base64,${data.trainingPlot}`;
+        closeBtn.addEventListener("click", () => {
+          modal.style.display = "none";
+        });
+      }
 
 });
 
@@ -253,23 +258,26 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         updateWeatherIcon(result.weatherCondition)
         
 
-        
-        // ✅ Show the chart button now
+
+        // Show the chart button
         document.getElementById("showChartBtn").style.display = "inline-block";
-        // Assuming 'data' is the JSON response from the backend
+
+        // Update the chart image source if available
         if (result.plot) {
             const chartImg = document.getElementById("forecastChart");
-            chartImg.src = `data:image/png;base64,${data.plot}`;
+            chartImg.src = `data:image/png;base64,${result.plot}`;
         }
-        
+
         // Button opens modal
         document.getElementById("showChartBtn").addEventListener("click", () => {
             document.getElementById("chartModal").style.display = "flex";
         });
-        // Close button
+
+        //Close button hides modal
         document.getElementById("closeChart").addEventListener("click", () => {
             document.getElementById("chartModal").style.display = "none";
         });
+
     }
 
 
