@@ -1,5 +1,8 @@
 from datetime import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
+import io
+import base64
 
 def get_best_hour_by_season(temp_diff, df, season):
     if season == "winter":
@@ -63,3 +66,20 @@ def interpolate_weather_data_for_times_net(weather_data):
     hourly_times = hourly_df.index.strftime("%Y-%m-%d %H:%M").tolist()[:48]
 
     return hourly_temps, hourly_times
+
+
+def plot_temp_difference(forecast, outdoor):
+    temp_diff = forecast - outdoor
+    fig, ax = plt.subplots(figsize=(10, 4))
+    temp_diff.plot(ax=ax, label="Indoor - Outdoor Temp", color="orange")
+    ax.set_title("Forecasted Temperature Difference")
+    ax.set_ylabel("°C")
+    ax.set_xlabel("Time")
+    ax.legend()
+
+    buf = io.BytesIO()
+    plt.tight_layout()
+    plt.savefig(buf, format="png")
+    plt.close(fig)
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")

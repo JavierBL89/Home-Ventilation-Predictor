@@ -48,6 +48,17 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = false;
         submitBtn.innerHTML = "🔍 Predict Ventilation Time";
     });
+
+    // show training data graph
+    document.getElementById("showTrainingGraph").addEventListener("click", () => {
+        document.getElementById("trainingModal").style.display = "flex";
+    });
+    
+    document.getElementById("closeTraining").addEventListener("click", () => {
+        document.getElementById("trainingModal").style.display = "none";
+    });
+    document.getElementById("trainingChartPopup").src = `data:image/png;base64,${data.trainingPlot}`;
+
 });
 
 
@@ -239,8 +250,26 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         document.getElementById("eveningSuggestion").textContent = result.eveningSuggestion;
         document.getElementById("alternativeTimes").textContent = alternatives;
         document.getElementById("season").textContent = result.season;
-
         updateWeatherIcon(result.weatherCondition)
+        
+
+        
+        // ✅ Show the chart button now
+        document.getElementById("showChartBtn").style.display = "inline-block";
+        // Assuming 'data' is the JSON response from the backend
+        if (result.plot) {
+            const chartImg = document.getElementById("forecastChart");
+            chartImg.src = `data:image/png;base64,${data.plot}`;
+        }
+        
+        // Button opens modal
+        document.getElementById("showChartBtn").addEventListener("click", () => {
+            document.getElementById("chartModal").style.display = "flex";
+        });
+        // Close button
+        document.getElementById("closeChart").addEventListener("click", () => {
+            document.getElementById("chartModal").style.display = "none";
+        });
     }
 
 

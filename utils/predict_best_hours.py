@@ -1,7 +1,7 @@
 import pandas as pd
 from flask import jsonify
 import logging
-
+from utils.helpers import plot_temp_difference
 
 def predict_best_hours(df, weather_data, season, forecast):
     # Suggest 2 ventilation periods:
@@ -102,10 +102,9 @@ def predict_best_hours(df, weather_data, season, forecast):
 
     top_score = alt_sorted.iloc[0]
     threshold = 1.0 if season in ["spring", "autumn"] else 0.5
-    suggested_hours = alt_sorted[abs(alt_sorted - top_score) <= threshold].index.hour.tolist()
+    suggested_hours = alt_sorted.head(3).index.hour.tolist()
     ## suggest alterntive hours
     suggested_hours = [f"{h}:00" for h in sorted(set(suggested_hours))]
-
 
     print("Final suggested hours:", suggested_hours)  # Debugging
 
@@ -115,7 +114,8 @@ def predict_best_hours(df, weather_data, season, forecast):
     avg_temp = round(df["outdoor_temperature"].mean(), 1)
     max_temp = round(df["outdoor_temperature"].max(), 1)
     min_temp = round(df["outdoor_temperature"].min(), 1)
-    
+    image_base64 = plot_temp_difference(forecast, df["outdoor_temperature"])
+
     logging.warning(f"Returning: {best_hour}, {suggested_hours}, {best_morning_hour}, {best_evening_hour}, {season}, {weather_condition}, {avg_temp}, {min_temp}, {max_temp}")
 
     return jsonify({
@@ -127,5 +127,6 @@ def predict_best_hours(df, weather_data, season, forecast):
         "weatherCondition": weather_condition,
         "avgTemperature": avg_temp,
         "maxTemperature": max_temp,
-        "minTemperature": min_temp
+        "minTemperature": min_temp,
+        "plot": image_base64
    }), 200
