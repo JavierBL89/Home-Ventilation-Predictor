@@ -8,8 +8,6 @@ def predict_best_hours(df, weather_data, season, forecast):
     #### Ensure ventilation avoids extreme cold in winter & extreme heat in summer. 
     #### Pick the best hours within these ranges instead of just one.
     best_hour = None
-    best_morning_hour = None
-    best_evening_hour = None
 
     ## Find the absolute best ventilation time (could be night)**
     # Compute temperature difference between forecasted indoor temperature and outdoor temperature
@@ -33,9 +31,6 @@ def predict_best_hours(df, weather_data, season, forecast):
         morning_hours = df.between_time("08:00", "12:00")
         evening_hours = df.between_time("13:00", "17:00")
 
-        best_morning_hour = morning_hours["outdoor_temperature"].idxmax().hour if not morning_hours.empty else None
-        best_evening_hour = evening_hours["outdoor_temperature"].idxmax().hour if not evening_hours.empty else None
-
     elif season == "summer":
         # Suggest coolest (max cooling effect)
         morning_hours = temp_diff.between_time("06:00", "11:00")
@@ -49,14 +44,8 @@ def predict_best_hours(df, weather_data, season, forecast):
         morning_hours = temp_diff.between_time("07:00", "12:00")
         evening_hours = temp_diff.between_time("16:00", "20:00")
 
-        best_morning_hour = (morning_hours - morning_hours.median()).abs().idxmin().hour if not morning_hours.empty else None
-        best_evening_hour = (evening_hours - evening_hours.median()).abs().idxmin().hour if not evening_hours.empty else None
 
 
-
-    # Ensure valid output
-    best_morning_hour = f"{best_morning_hour}:00" if best_morning_hour is not None else "No optimal morning ventilation"
-    best_evening_hour = f"{best_evening_hour}:00" if best_evening_hour is not None else "No optimal evening ventilation"
 
     print("Available hours for alternative:", temp_diff.index.hour.tolist())
 
@@ -100,8 +89,7 @@ def predict_best_hours(df, weather_data, season, forecast):
         else:
             suggested_hours.append("No optimal alternative found")
 
-    top_score = alt_sorted.iloc[0]
-    threshold = 1.0 if season in ["spring", "autumn"] else 0.5
+
     suggested_hours = alt_sorted.head(3).index.hour.tolist()
     ## suggest alterntive hours
     suggested_hours = [f"{h}:00" for h in sorted(set(suggested_hours))]
@@ -121,8 +109,6 @@ def predict_best_hours(df, weather_data, season, forecast):
     return jsonify({
         "bestVentilationTime": f"{best_hour}:00",
         "alternativeTimes": [h for h in suggested_hours if h != f"{best_hour}:00"],
-        "morningSuggestion": best_morning_hour,
-        "eveningSuggestion": best_evening_hour,
         "season": season,
         "weatherCondition": weather_condition,
         "avgTemperature": avg_temp,

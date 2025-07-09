@@ -251,8 +251,6 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         document.getElementById("minTemp").textContent = result.minTemperature;
         document.getElementById("maxTemp").textContent = result.maxTemperature;
         document.getElementById("bestVentilationTime").textContent = result.bestVentilationTime;
-        document.getElementById("morningSuggestion").textContent = result.morningSuggestion;
-        document.getElementById("eveningSuggestion").textContent = result.eveningSuggestion;
         document.getElementById("alternativeTimes").textContent = alternatives;
         document.getElementById("season").textContent = result.season;
         updateWeatherIcon(result.weatherCondition)
