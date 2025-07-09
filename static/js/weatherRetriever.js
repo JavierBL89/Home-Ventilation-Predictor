@@ -201,8 +201,8 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
     console.log("Sending to backend:", { filteredForecast, targetDate,});
     console.log("✅ Selected model:", model);  // Should show 'sarimax' or 'timesNet'
 
-    document.getElementById("result-container").style.display = "none";  // clear ccontainer from prev results
-    
+    document.getElementById("result-container").style.display = "none";  // clear container from prev results
+
     let url = ""
     // Example: Check if a specific variable exists
     if (DEV) {
