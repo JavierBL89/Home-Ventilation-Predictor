@@ -104,7 +104,7 @@ def predict_best_hours(df, weather_data, season, forecast):
     min_temp = round(df["outdoor_temperature"].min(), 1)
     image_base64 = plot_temp_difference(forecast, df["outdoor_temperature"])
 
-    logging.warning(f"Returning: {best_hour}, {suggested_hours}, {best_morning_hour}, {best_evening_hour}, {season}, {weather_condition}, {avg_temp}, {min_temp}, {max_temp}")
+    logging.warning(f"Returning: {best_hour}, {suggested_hours}, {season}, {weather_condition}, {avg_temp}, {min_temp}, {max_temp}")
 
     return jsonify({
         "bestVentilationTime": f"{best_hour}:00",

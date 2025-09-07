@@ -30,87 +30,117 @@ Let me know if you’d like to visualize the **indoor temp forecast curves** sid
 
 
 
-Perfect. Here's the next step: a full **TimesNet README-style explanation**, followed by a **comparison table of SARIMAX vs Prophet vs TimesNet** that you can include in the *Models Info* section of your chatbot.
 
----
-
-## 🧠 TimesNet – Time-Series Transformer for Forecasting
-
-TimesNet is a state-of-the-art **deep learning model** built specifically for **multivariate time-series forecasting**. Unlike traditional statistical models like ARIMA or Prophet, TimesNet leverages the **power of Transformers**, making it highly effective for learning both short- and long-term dependencies in complex data like weather, traffic, or energy demand.
-
----
-
-### 🚀 Why Use TimesNet?
-
-| Feature                   | Benefit                                                                                                       |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| ✅ Learns complex patterns | Captures **non-linear trends**, **hidden interactions**, and **seasonal patterns** better than ARIMA/Prophet. |
-| ✅ Generalizes well        | Works across different time series domains (energy, finance, temperature, etc.) without much manual tuning.   |
-| ✅ Fast inference          | Once trained, it makes accurate predictions quickly.                                                          |
-| ✅ Multivariate support    | Can handle multiple correlated features (like indoor and outdoor temperatures).                               |
-
----
-
-### 🔍 How TimesNet Works
-
-TimesNet is built using **temporal 1D convolution** and **Fourier layers** to extract local and global patterns from the input time series. It replaces traditional attention mechanisms with frequency-enhanced convolutions that better represent periodicity and seasonal effects.
-
-Each input sequence is transformed into embeddings and passed through stacked residual blocks that learn temporal dependencies and project future values.
-
-> It's like giving the model "vision" into both **short spikes** and **long seasonal shifts**, simultaneously.
-
----
-
-### 📦 Input and Output Format
-
-* **Input**: Last *N* hours of indoor and outdoor temperature values.
-* **Output**: Predicted indoor temperatures for the next 24–48 hours.
-
-> In your app, we interpolate the 3-hour OpenWeather data into hourly steps and pass this along with historical indoor temperature as input.
-
----
-
-### 🔧 TimesNet in Your Ventilation App
-
-You’re using a **pre-trained TimesNet model** hosted on Hugging Face Spaces. The inference is done through an API call that:
-
-* Receives the processed and interpolated indoor/outdoor data.
-* Predicts indoor temperatures for the next 24 hours.
-* Computes the best ventilation windows based on indoor–outdoor differences.
-
----
-
-### 📊 Model Performance (Compared to ARIMA & Prophet)
-
-| Metric              | ARIMA (best)            | Prophet                | TimesNet                   |
-| ------------------- | ----------------------- | ---------------------- | -------------------------- |
-| MAE                 | 0.44°C                  | \~1.5°C\*              | \~0.30–0.35°C              |
-| Handles Seasonality | ❌ (needs manual SARIMA) | ✅ built-in             | ✅ learned through training |
-| Handles Noise       | ❌                       | ⚠️ decent              | ✅ robust                   |
-| Forecast Horizon    | Short                   | Medium                 | Long (48h+)                |
-| Learning Style      | Statistical             | Additive decomposition | Deep learning transformer  |
-| Setup Effort        | Moderate                | Easy                   | High (pretraining needed)  |
-
-> \*Prophet performance varies depending on seasonality granularity. The above are average ranges based on your early tests.
-
----
-
-### 🛠️ Model Weaknesses
-
-* ❗ **Requires large training datasets**
-* ❗ More **complex to interpret** than ARIMA or Prophet
-* ❗ Higher memory usage (incompatible with lightweight hosting unless optimized)
-
----
-
-### 📌 Summary
-
-| Use Case                                         | Best Model         |
-| ------------------------------------------------ | ------------------ |
-| Quick short-term prediction                      | ARIMA (Auto-ARIMA) |
-| Explainable with strong seasonality              | Prophet            |
-| Most accurate on complex or long-range forecasts | TimesNet           |
-
----
 
 Would you like me to generate the full HTML/CSS layout for the chatbot interface now (with the **interaction on the right** and a scrollable **models info section on the left** showing all 3 model cards)?
+
+
+🔍 Ventilation Time Prediction: Model Overview
+Our app predicts the most optimal time to ventilate your home using three different forecasting models. Each model uses indoor and outdoor temperature data to analyze trends and generate future predictions. Below is how each model works and how we’ve applied them.
+
+📘 1. SARIMAX (Seasonal ARIMA with Exogenous Variables)
+Type: Traditional Statistical Model
+Best for: Capturing short-term dependencies, trends, and lag effects
+Key Feature: Requires data to be stationary
+
+🔧 Workflow:
+Stationarity Check:
+We run the Augmented Dickey-Fuller (ADF) test to determine if the indoor temperature data is stationary.
+
+If not, we apply differencing to remove trends.
+
+Model Training:
+
+We train SARIMAX with the transformed temperature data using the (p,d,q) order determined either manually or via auto_arima().
+
+We include daily seasonality with parameters like (1,1,1,24) for 24-hour cycles.
+
+Forecasting:
+
+We generate hourly indoor temperature predictions.
+
+Outdoor temperatures are interpolated to match indoor forecast resolution.
+
+We compare the two to determine the best, morning, and evening times to ventilate the home.
+
+📗 2. Prophet by Meta
+Type: Additive Forecasting Model
+Best for: Seasonal trends, holiday effects, sudden changes
+Key Feature: Automatically handles non-stationarity and multiple seasonalities
+
+🔧 Workflow:
+Data Preparation:
+
+Prophet requires two columns: ds (timestamp) and y (value to predict, i.e., indoor temperature).
+
+Model Training:
+
+We use the entire historical temperature series and let Prophet learn daily/weekly seasonalities automatically.
+
+Prophet uses additive components:
+y(t) = Trend(t) + Seasonality(t) + Holidays(t) + Error(t)
+
+Forecasting:
+
+We forecast 48 future hourly values.
+
+Just like SARIMAX, we compare indoor forecast to interpolated outdoor temperature to recommend the best ventilation windows.
+
+📕 3. TimesNet (Time-Series Transformer)
+Type: Deep Learning Transformer
+Best for: Complex, multi-step dependencies and long-term temporal patterns
+Key Feature: Learns temporal dynamics with attention mechanisms
+
+🔧 Workflow:
+Pretrained Model:
+
+We use a pretrained version of TimesNet hosted on Hugging Face.
+
+Our pipeline feeds it hourly indoor temperature sequences.
+
+Model Input:
+
+The past 24–48 hours of indoor temperatures are formatted into the model’s input format.
+
+Outdoor temperatures are interpolated as context, but not fed directly into the model (optional extension).
+
+Inference & Prediction:
+
+TimesNet outputs the next 48 indoor hourly predictions.
+
+We align these with the interpolated outdoor data to determine:
+
+🕐 Best Time
+
+🌅 Morning Option
+
+🌇 Evening Option
+
+🌀 Alternatives
+
+🔄 Logic Behind All Models
+All models follow the same ventilation decision logic:
+
+Forecast indoor temperature (SARIMAX / Prophet / TimesNet).
+
+Interpolate outdoor forecast from OpenWeather API.
+
+Detect the hour with maximum difference:
+
+In summer: prefer ventilating during the coolest indoor vs. outdoor gap (e.g., late night).
+
+In winter: prefer ventilating during the warmest difference (e.g., midday).
+
+This logic is season-aware, allowing the app to give different suggestions per season.
+
+
+
+Why Are the Results Sometimes Different?
+Each model makes different assumptions about the data:
+
+SARIMAX assumes past patterns will continue, and can't easily adjust to sudden changes.
+
+Prophet balances seasonality with trend shifts, but may be less accurate hour-to-hour.
+
+TimesNet is more flexible and powerful but can overfit or behave unpredictably unless trained on extensive data.
+

@@ -1,6 +1,6 @@
 
 let openWeatherAPIString = "";
-const DEV = false;
+const DEV = true;
 
 document.addEventListener("DOMContentLoaded", () => {
 

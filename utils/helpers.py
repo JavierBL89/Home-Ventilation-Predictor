@@ -1,6 +1,9 @@
 from datetime import datetime
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")   # must be before importing pyplot
 import matplotlib.pyplot as plt
+
 import io
 import base64
 

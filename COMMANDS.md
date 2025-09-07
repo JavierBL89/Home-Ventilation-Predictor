@@ -7,7 +7,12 @@ bash
 
 2. Activate the virtual environment:
 
-   - source venv/bin/activate
+   - source venv/bin/activate©
+   
+   Force enviroment exit: 
+
+   - exec zsh
+
 
 3. Install Dependencies from requirements.txt:
 Install all the dependencies listed in your requirements.txt file:

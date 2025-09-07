@@ -11,11 +11,11 @@ import requests
 from flask_cors import CORS
 import pickle
 
-DEV = False
+DEV = True
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
-CORS(app, origins=["https://home-ventilation-predictor.onrender.com"])
+CORS(app, origins=["https://home-ventilation-predictor.onrender.com", "http://192.168.1.100" ])
 
 # Serve static files like images
 @app.route('/static/<path:filename>')
@@ -74,7 +74,8 @@ def predict():
         }
         # Step 3: Send POST request to your Hugging Face Space
         response = requests.post(
-                    "https://javierBLdev89-TimeNet-Home-Ventilation-time-Predictor.hf.space/time_net/predict", 
+                     "http://192.168.1.100/time_net/predict",
+                    # "https://javierBLdev89-TimeNet-Home-Ventilation-time-Predictor.hf.space/time_net/predict", 
                     json=payload
                 )
         # Check response
@@ -118,9 +119,9 @@ def predict():
 
 port=0
 if DEV==True:
-    port==3000
+    port=3000
 else:
-    port==5000
+    port=5000
 
 
 if __name__ == '__main__':
