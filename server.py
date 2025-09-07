@@ -11,7 +11,7 @@ import requests
 from flask_cors import CORS
 import pickle
 
-DEV = True
+DEV = alse
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
