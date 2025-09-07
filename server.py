@@ -11,7 +11,7 @@ import requests
 from flask_cors import CORS
 import pickle
 
-DEV = alse
+DEB = alse
 
 load_dotenv()  # Load .env file
 app = Flask(__name__, static_folder="static", template_folder='templates')
@@ -118,7 +118,7 @@ def predict():
     return best_hours_prediction
 
 port=0
-if DEV==True:
+if DEB==True:
     port=3000
 else:
     port=5000
