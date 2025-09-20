@@ -7,7 +7,7 @@ bash
 
 2. Activate the virtual environment:
 
-   - source venv/bin/activate©
+   - source venv/bin/activate
    
    Force enviroment exit: 
 

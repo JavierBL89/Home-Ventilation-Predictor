@@ -7,6 +7,7 @@
   <title>Ventilation Predictor</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/metricsDisplay.css') }}">
 </head>
 
 <body>
@@ -52,31 +53,6 @@
           <li><strong>Forecasting:</strong> We generate hourly indoor temperature predictions. Outdoor temperatures are
             interpolated to match indoor forecast resolution. We compare the two to determine the best, morning, and
             evening times to ventilate the home.</li>
-        </ol>
-
-        <hr>
-
-        <h3>📗 2. Prophet by Meta</h3>
-        <ul>
-          <li><strong>Type:</strong> Additive Forecasting Model</li>
-          <li><strong>Best for:</strong> Seasonal trends, holiday effects, sudden changes</li>
-          <li><strong>Key Feature:</strong> Automatically handles non-stationarity and multiple seasonalities</li>
-        </ul>
-
-        <h4>🔧 Workflow:</h4>
-        <ol>
-          <li><strong>Data Preparation:</strong> Prophet requires two columns: <code>ds</code> (timestamp) and
-            <code>y</code> (value to predict, i.e., indoor temperature).</li>
-            <br>
-          <li><strong>Model Training:</strong> We use the entire historical temperature series and let Prophet learn
-            daily/weekly seasonalities automatically.
-            <br>
-            Prophet uses additive components:<br>
-            <code>y(t) = Trend(t) + Seasonality(t) + Holidays(t) + Error(t)</code>
-          </li>
-          <br>
-          <li><strong>Forecasting:</strong> We forecast 48 future hourly values. Just like SARIMAX, we compare indoor
-            forecast to interpolated outdoor temperature to recommend the best ventilation windows.</li>
         </ol>
 
         <hr>
@@ -131,8 +107,6 @@
         <ul>
           <li><strong>SARIMAX:</strong> assumes past patterns will continue, and can't easily adjust to sudden changes.
           </li>
-          <li><strong>Prophet:</strong> balances seasonality with trend shifts, but may be less accurate hour-to-hour.
-          </li>
           <li><strong>TimesNet:</strong> is more flexible and powerful but can overfit or behave unpredictably unless
             trained on extensive data, which is not the case, but results show well accuracy to what is expected</li>
         </ul>
@@ -152,7 +126,6 @@
           <label for="modelSelector">Model:</label>
           <select id="modelSelector">
             <option value="sarimax">SARIMAX</option>
-            <option value="prophet">Prophet (Meta)</option>
             <option value="timesNet">TimesNet (Transformer-based)</option>
 
           </select>
@@ -189,6 +162,13 @@
         </div>
       </div>
 
+      <div class="metrics_container">
+        <h2>📊 Model Performance Metrics</h2>
+        <div id="metrics-container">
+          <div class="loading">Loading metrics...</div>
+        </div>
+      </div>
+
     </div>
 
 
@@ -199,7 +179,10 @@
         <img id="forecastChart" src="" alt="Temperature Forecast Chart" style="max-width:100%; height:auto;">
       </div>
     </div>
+
+    <script src="{{ url_for('static', filename='js/configuration.js') }}"></script>
     <script src="{{ url_for('static', filename='js/weatherRetriever.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/metrics.js') }}"></script>
   </div>
 </body>
 

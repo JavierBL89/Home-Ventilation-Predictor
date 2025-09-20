@@ -1,8 +1,10 @@
-
 let openWeatherAPIString = "";
-const DEV = false;
+
+// DEV configuration moved to config.js
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    addMetricsToMainPage();
 
     const daySelector = document.getElementById("daySelector");
     const submitBtn = document.getElementById("predictButton");
@@ -62,32 +64,197 @@ document.addEventListener("DOMContentLoaded", () => {
         closeBtn.addEventListener("click", () => {
           modal.style.display = "none";
         });
-      }
+    }
 
 });
 
+// NEW METRICS FUNCTIONS
+/**
+ * Get the base URL for API calls based on DEV flag
+ */
+
+
+/**
+ * Fetch comprehensive metrics for all models
+ */
+async function getAllModelMetrics() {
+    try {
+        const response = await fetch(`${getBaseUrl()}/api/model_metrics`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch metrics');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error("Error fetching all model metrics:", error);
+        throw error;
+    }
+}
+
+/**
+ * Fetch metrics for a specific model
+ * @param {string} modelName - Name of the model (arima, prophet, timesnet)
+ */
+async function getSingleModelMetrics(modelName) {
+    try {
+        const response = await fetch(`${getBaseUrl()}/api/model_metrics/${modelName}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `Failed to fetch ${modelName} metrics`);
+        }
+        
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${modelName} metrics:`, error);
+        throw error;
+    }
+}
+
+
+/**
+ * Display model metrics in a simple format (for adding to main page)
+ */
+async function displayModelMetrics() {
+    try {
+        const metrics = await getAllModelMetrics();
+        const bestModel = metrics.best_model;
+        
+        // Create a simple metrics display
+        let metricsHTML = `
+            <div class="metrics-summary">
+                <h4>📊 Model Performance Summary</h4>
+                <p><strong>Best Model:</strong> ${bestModel.name} (R² = ${bestModel.r2_score})</p>
+                <div class="metrics-grid">
+        `;
+        
+        // Add each model's key metrics
+        const models = ['arima', 'prophet', 'timesnet'];
+        models.forEach(model => {
+            const modelData = metrics[model];
+            if (modelData && modelData.status === 'success') {
+                metricsHTML += `
+                    <div class="model-metric">
+                        <strong>${modelData.model_name}:</strong>
+                        R² = ${modelData.r2}, MAE = ${modelData.mae}
+                    </div>
+                `;
+            } else if (modelData) {
+                metricsHTML += `
+                    <div class="model-metric error">
+                        <strong>${model.toUpperCase()}:</strong> Error - ${modelData.error}
+                    </div>
+                `;
+            }
+        });
+        
+        metricsHTML += `
+                </div>
+                <a href="/metrics" class="metrics-link">📈 View Detailed Metrics</a>
+            </div>
+        `;
+        
+        return metricsHTML;
+        
+    } catch (error) {
+        return `
+            <div class="metrics-summary error">
+                <h4>📊 Model Metrics</h4>
+                <p>Error loading metrics: ${error.message}</p>
+                <a href="/metrics" class="metrics-link">📈 Try Detailed View</a>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Add metrics to the main page (call this from DOMContentLoaded if needed)
+ */
+async function addMetricsToMainPage() {
+    const metricsContainer = document.getElementById('metrics-container');
+    if (metricsContainer) {
+        metricsContainer.innerHTML = '<div class="loading">Loading metrics...</div>';
+        try {
+            const metricsHTML = await displayModelMetrics();
+            metricsContainer.innerHTML = metricsHTML;
+        } catch (error) {
+            metricsContainer.innerHTML = `<div class="error">Failed to load metrics: ${error.message}</div>`;
+        }
+    }
+}
+
+/**
+ * Rate a metric value and return appropriate class/color
+ */
+function rateMetric(value, type) {
+    switch(type) {
+        case 'r2':
+            if (value >= 0.8) return 'excellent';
+            if (value >= 0.6) return 'good';
+            if (value >= 0.4) return 'fair';
+            return 'poor';
+        
+        case 'mape':
+            if (value <= 5) return 'excellent';
+            if (value <= 10) return 'good';
+            if (value <= 20) return 'fair';
+            return 'poor';
+        
+        default:
+            return 'neutral';
+    }
+}
+
+/**
+ * Format metrics for display
+ */
+function formatMetrics(metrics) {
+    if (!metrics || metrics.status === 'error') {
+        return {
+            display: 'Error',
+            class: 'error',
+            details: metrics ? metrics.error : 'Unknown error'
+        };
+    }
+    
+    return {
+        r2: {
+            value: metrics.r2,
+            class: rateMetric(metrics.r2, 'r2'),
+            display: `${metrics.r2} (${rateMetric(metrics.r2, 'r2')})`
+        },
+        mae: {
+            value: metrics.mae,
+            display: metrics.mae.toString()
+        },
+        rmse: {
+            value: metrics.rmse,
+            display: metrics.rmse.toString()
+        },
+        mape: {
+            value: metrics.mape,
+            class: rateMetric(metrics.mape, 'mape'),
+            display: `${metrics.mape}% (${rateMetric(metrics.mape, 'mape')})`
+        }
+    };
+}
+
+// EXISTING FUNCTIONS (unchanged)
 
 // Fetch API key from Flask server
 async function loadAPIKey() {
+
+    let url = getBaseUrl();
     try {
-        
-        let url = ""
-        // Example: Check if a specific variable exists
-        if (DEV) {
-            url ="http://127.0.0.1:3000"
-        } else {
-            url ="https://home-ventilation-predictor.onrender.com"
-        }
-    
         const response = await fetch(`${url}/config`);
         const data = await response.json();
-
-        openWeatherAPIString = data.openWeatherAPI
+        openWeatherAPIString = data.openWeatherAPI;
     } catch (error) {
         console.error("Error fetching API key:", error);
     }
-};
-
+}
 
 /**
  * The function `filterForeCastByDate` filters a list of forecast entries based on a selected date
@@ -139,7 +306,6 @@ function filterForecastByDate(foreCastList, selectedDate) {
     };
 }
 
-
 /**
  * The function `getWeatherData` fetches hourly weather data for a specified location from the
  * OpenWeather API, extracts the temperatures, and sends the data to a Python backend.
@@ -152,9 +318,7 @@ function filterForecastByDate(foreCastList, selectedDate) {
  * parameters, makes a fetch request to the API, and processes the response data.
  */
 async function getWeatherData(selectedDate, model) {
-
-  
-    await loadAPIKey()
+    await loadAPIKey();
     if (!openWeatherAPIString) {
         console.error("API key not loaded yet.");
         return;
@@ -176,7 +340,7 @@ async function getWeatherData(selectedDate, model) {
             console.log("Filtered Forecast for", targetDate, ":", filteredForecast.length);
 
             // send data to python backend
-            await sendToBackEnd(filteredForecast, targetDate, model)
+            await sendToBackEnd(filteredForecast, targetDate, model);
 
         } else {
             throw new Error(data.message);
@@ -186,7 +350,6 @@ async function getWeatherData(selectedDate, model) {
         console.error("Error fetching weather data", error);
     }
 }
-
 
 /**
  * The function `sendToBackEnd` asynchronously sends weather data to a backend server and logs the best
@@ -202,17 +365,9 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
     console.log("✅ Selected model:", model);  // Should show 'sarimax' or 'timesNet'
 
     document.getElementById("result-container").style.display = "none";  // clear container from prev results
-
-    let url = ""
-    // Example: Check if a specific variable exists
-    if (DEV) {
-        url ="http://127.0.0.1:3000"
-    } else {
-        url ="https://home-ventilation-predictor.onrender.com"
-    }
     
     try {
-        const response = await fetch(`${url}/process_weather`, { // Adjust URL if using FastAPI
+        const response = await fetch(`${getBaseUrl()}/process_weather`, { // Adjust URL if using FastAPI
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -230,13 +385,12 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
             ? result.alternativeTimes.join(', ')
             : "No alternatives available";
 
-        sendVisualResults(result, alternatives, targetDate)
+        sendVisualResults(result, alternatives, targetDate);
 
     }
     catch (error) {
         console.error("Error sending data to backend:", error);
     }
-
 
     /**
      * The function `sendVisualResults` displays weather-related data in the DOM and updates the
@@ -254,10 +408,8 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         document.getElementById("bestVentilationTime").textContent = result.bestVentilationTime;
         document.getElementById("alternativeTimes").textContent = alternatives;
         document.getElementById("season").textContent = result.season;
-        updateWeatherIcon(result.weatherCondition)
+        updateWeatherIcon(result.weatherCondition);
         
-
-
         // Show the chart button
         document.getElementById("showChartBtn").style.display = "inline-block";
 
@@ -276,11 +428,7 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         document.getElementById("closeChart").addEventListener("click", () => {
             document.getElementById("chartModal").style.display = "none";
         });
-
     }
-
-
-
 
    /**
     * The function `updateWeatherIcon` takes a weather condition as input and updates the weather icon
@@ -317,16 +465,14 @@ async function sendToBackEnd(filteredForecast, targetDate, model) {
         }
           }
     
+        const lowerCondition = weatherCondition.toLowerCase();
+        const info = iconMap[lowerCondition];
 
-    const lowerCondition = weatherCondition.toLowerCase();
-    const info = iconMap[lowerCondition];
+        // Fallback if condition is not mapped
+        const iconFile = info ? info.icon : "Ups!";
+        const description = info ? info.description : "Unknown Weather Category";
 
-    // Fallback if condition is not mapped
-    const iconFile = info ? info.icon : "Ups!";
-    const description = info ? info.description : "Unknown Weather Category";
-
-    document.getElementById("weatherCondition").textContent = description;
-    document.getElementById("weather-icon").src = `/static/images/${iconFile}`;
+        document.getElementById("weatherCondition").textContent = description;
+        document.getElementById("weather-icon").src = `/static/images/${iconFile}`;
     }
-
 }
