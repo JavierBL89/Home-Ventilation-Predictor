@@ -4,8 +4,6 @@ let openWeatherAPIString = "";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    addMetricsToMainPage();
-
     const daySelector = document.getElementById("daySelector");
     const submitBtn = document.getElementById("predictButton");
     const modelSelector = document.getElementById("modelSelector");
@@ -113,6 +111,24 @@ async function getSingleModelMetrics(modelName) {
     }
 }
 
+/**
+ * Get the best performing model
+ */
+async function getBestModel() {
+    try {
+        const response = await fetch(`${getBaseUrl()}/api/best_model`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch best model');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error("Error fetching best model:", error);
+        throw error;
+    }
+}
 
 /**
  * Display model metrics in a simple format (for adding to main page)

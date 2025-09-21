@@ -23,37 +23,14 @@ CORS(app, origins=["https://home-ventilation-predictor.onrender.com", "http://ht
 def static_files(filename):
     return send_from_directory(app.static_folder, filename)
 
-
 @app.route('/', methods=['GET'])
 def home_page():
     """API endpoint to render HOME PAGE"""
     return render_template('index.html') 
 
-
-@app.route('/metrics', methods=['GET'])
-def metrics_page():
-    """API endpoint to render MODEL METRICS PAGE"""
-    return render_template('metrics.html')  # Create this template
-
-
 @app.route("/config")
 def get_config():
     return {"openWeatherAPI": os.environ.get("OPENWEATHER_API_KEY", "")}
-
-
-# NEW METRICS ENDPOINTS
-@app.route('/api/model_metrics', methods=['GET'])
-def get_model_metrics():
-    try:
-        metrics = calculate_model_metrics()
-        return jsonify(metrics)
-    except Exception as e:
-        return jsonify({
-            'error': str(e),
-            'arima': {'status': 'error', 'error': str(e)},
-            'prophet': {'status': 'error', 'error': str(e)},
-            'timesnet': {'status': 'error', 'error': str(e)}
-        }), 500
 
 
 @app.route('/api/model_metrics/<model_name>', methods=['GET'])
