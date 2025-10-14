@@ -8,7 +8,6 @@ import os
 import requests
 from flask_cors import CORS
 import pickle
-from utils.model_metrics_calculators import calculate_model_metrics
 
 from dotenv import load_dotenv
 load_dotenv()  # ⬅️ This loads your .env values
@@ -31,23 +30,6 @@ def home_page():
 @app.route("/config")
 def get_config():
     return {"openWeatherAPI": os.environ.get("OPENWEATHER_API_KEY", "")}
-
-
-@app.route('/api/model_metrics/<model_name>', methods=['GET'])
-def get_single_model_metrics(model_name):
-    """API endpoint to get metrics for a specific model"""
-    try:
-        all_metrics = calculate_model_metrics()
-        
-        if model_name.lower() in ['arima', 'sarimax']:
-            return jsonify(all_metrics['arima'])
-        elif model_name.lower() in ['timesnet', 'timesnet']:
-            return jsonify(all_metrics['timesnet'])
-        else:
-            return jsonify({'error': f'Unknown model: {model_name}'}), 400
-            
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/process_weather', methods=['POST'])
