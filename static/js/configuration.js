@@ -3,7 +3,7 @@
  * Centralized configuration for all JavaScript files
  */
 const APP_CONFIG = {
-    DEV: true, // Set to false for production
+    DEV: false, // Set to false for production
     LOCAL_URL: "http://127.0.0.1:5001",
     PROD_URL: "https://home-ventilation-predictor.onrender.com"
 };

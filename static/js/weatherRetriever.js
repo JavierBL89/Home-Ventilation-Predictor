@@ -1,4 +1,5 @@
 let openWeatherAPIString = "";
+import { getBaseUrl } from "./config.js";
 
 // DEV configuration moved to config.js
 

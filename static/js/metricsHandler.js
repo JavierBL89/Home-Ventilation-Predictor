@@ -1,3 +1,4 @@
+import { getBaseUrl } from './config.js';
 /**
  * Metrics Handler JavaScript
  * Handles model metrics display, rating, and API interactions
