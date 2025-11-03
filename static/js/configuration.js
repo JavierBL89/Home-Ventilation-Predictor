@@ -14,3 +14,5 @@ const APP_CONFIG = {
 function getBaseUrl() {
     return APP_CONFIG.DEV ? APP_CONFIG.LOCAL_URL : APP_CONFIG.PROD_URL;
 }
+
+export default getBaseUrl;
